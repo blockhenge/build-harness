@@ -23,7 +23,7 @@ git_clone_or_update() {
       cd "$directory" || exit; 
       git_update_branch "main"
       git_update_branch "master"
-      git_update_branch "develop"
+      git_update_branch "development"
     )
   else
     ref=$(echo "$url" | awk -F '?ref=' '{print $2}')
