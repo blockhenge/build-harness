@@ -8,3 +8,6 @@ mvn/verify:
 		--volume $(HOME)/.m2/repository:/repository \
 		--workdir /src/ \
 		maven:3.6.3-jdk-11 mvn verify --log-file ./mvn.log
+
+mvn/jib:
+	cd *-impl && mvn compile jib:build --log-file jib.log
