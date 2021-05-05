@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC1091
+
+################################################################################
+# find script location
+################################################################################
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+################################################################################
+# Usage help
+################################################################################
+usage() {
+    echo "build docker image for project"
+    echo
+    echo "Syntax: $0 [subcommand] [options]"
+}
+
+if [ ! -d chart ]; then
+    echo "only repos iwth a chart directory produce docker images"; exit 1
+fi
+
+if [ -d *-impl ]; then
+    echo "project has impl directory.. build there"
+else
+    echo "build here"
+fi
+
