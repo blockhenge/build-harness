@@ -24,7 +24,5 @@ pomDir=$(ls | grep impl)
 if [ "$pomDir" = "" ]; then
     mvn compile jib:build --log-file jib.log
 else
-    mvn compile jib:build -DpomFile=./$pomDir/pom.xml --log-file jib.log; 
+    cd $pomDir && mvn compile jib:build --log-file ../jib.log; 
 fi
-
-
