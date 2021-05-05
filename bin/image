@@ -16,12 +16,13 @@ usage() {
 }
 
 if [ ! -d chart ]; then
-    echo "only repos iwth a chart directory produce docker images"; exit 1
+    echo "only repos which include a chart directory produce docker images"; exit 0
 fi
 
 if [ -d *-impl ]; then
-    echo "project has impl directory.. build there"
+    mvn compile jib:build -DpomFile=./*-impl/pom.xml --log-file jib.log; 
 else
-    echo "build here"
+    mvn compile jib:build --log-file jib.log
 fi
+
 

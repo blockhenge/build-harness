@@ -10,4 +10,4 @@ mvn/verify:
 		maven:3.6.3-jdk-11 mvn verify --log-file ./mvn.log
 
 mvn/jib:
-	@image 
+	@image
