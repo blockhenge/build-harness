@@ -95,4 +95,4 @@ do
             ;;
     esac
 
-done < "$DIR"/../../repo-manifest
+done < "$DIR"/../../manifests/repos
