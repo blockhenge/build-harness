@@ -43,7 +43,7 @@ usage() {
 ################################################################################
 # validate requirements
 ################################################################################
-[ -f "$DIR"/../../repo-manifest ] || ( usage && die "repo-manifest flle not found" )
+[ -f "$DIR"/../../manifests/repos ] || ( usage && die "manifests/repos flle not found" )
 
 ################################################################################
 # Process the input options. Add options as needed.                            #
