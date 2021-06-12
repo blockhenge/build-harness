@@ -12,3 +12,13 @@ fi
 
 echo "Cloning ${GITHUB_REPO}#${BUILD_HARNESS_BRANCH}..."
 git clone -c advice.detachedHead=false --depth=1 -b "$BUILD_HARNESS_BRANCH" "$GITHUB_REPO"
+
+if [ -f .envrc ]
+then
+cat << EOF > .envrc
+#!/usr/bin/env bash
+
+# add ./build-harness/bin and ./build-harness/vendor to path
+export PATH=./build-harness/bin:./build-harness/vendor:$PATH
+EOF
+fi
