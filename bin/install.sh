@@ -14,6 +14,7 @@ fi
 echo "Cloning ${GITHUB_REPO}#${BUILD_HARNESS_BRANCH}..."
 git clone -c advice.detachedHead=false --depth=1 -b "$BUILD_HARNESS_BRANCH" "$GITHUB_REPO"
 
+echo "Write .envrc if not present"
 if [ ! -f .envrc ]
 then
 cat << EOF > .envrc
