@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export BUILD_HARNESS_ORG=${1:-russelltsherman}
+export BUILD_HARNESS_ORG=${1:-blockhenge}
 export BUILD_HARNESS_PROJECT=${2:-build-harness}
 export BUILD_HARNESS_BRANCH=${3:-main}
 export GITHUB_REPO="https://github.com/${BUILD_HARNESS_ORG}/${BUILD_HARNESS_PROJECT}.git"
