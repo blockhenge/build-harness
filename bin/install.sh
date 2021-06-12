@@ -21,6 +21,6 @@ cat << EOF > .envrc
 #!/usr/bin/env bash
 
 # add ./build-harness/bin and ./build-harness/vendor to path
-export PATH=./build-harness/bin:./build-harness/vendor:$PATH
+export PATH=./build-harness/bin:./build-harness/vendor:\$PATH
 EOF
 fi
