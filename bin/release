@@ -1,0 +1,233 @@
+#!/usr/bin/env bash
+
+set -e
+
+################################################################################
+# find script location
+################################################################################
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# [ -f "$DIR/../build-harness/lib/bash.sh" ] !! make -c $DIR/.. init
+[ -f "$DIR/../build-harness/lib/bash.sh" ] && source "$DIR/../build-harness/lib/bash.sh"
+
+################################################################################
+# script functions
+################################################################################
+
+function die_with() {
+	echo "$*" >&2
+	exit 1
+}
+
+function has_command() {
+	which "$1" >/dev/null 2>/dev/null || return 1
+	return 0
+}
+
+function has_xmllint_with_xpath() {
+	if [ "$(xmllint 2>&1 | grep xpath | wc -l)" = "0" ] 
+    then
+		return 1
+	else
+		return 0
+	fi
+}
+
+function require_command() {
+	while [ -n "$1" ]
+	do
+		has_command "$1" || die_with "Missing required command: $1"
+		shift
+	done
+}
+
+function require_xmllint_has_xpath() {
+	has_command xmllint || die_with "Missing xmllint command, please install it (from libxml2)"
+	has_xmllint_with_xpath || die_with "xmllint command is missing the --xpath option, please install the libxml2 version"
+}
+
+function rollback_and_die_with() {
+    echo "$*" >&2
+
+    echo ""
+    echo "Resetting release commit to return you to the same working state as before attempting a deploy"
+    echo "##############################################################################################"
+    git reset --hard HEAD^1 || echo "Git reset command failed!"
+
+    git push --delete origin ${RELEASE_VERSION} || echo "Git delete origin release tag failed!"
+    git tag -d ${RELEASE_VERSION} || echo "Git delete local release tag failed!"
+
+    git checkout development || echo "Git checkout development branch failed!"
+    git reset --hard origin/development || echo "Git reset command failed!"
+
+    git push -d origin release || echo "Git delete origin release branch failed!"
+    git branch -D release || echo "Git delete local release branch failed!"
+
+    git push -d origin releaseVersion || echo "Git delete origin releaseVersion branch failed!"
+    git branch -D releaseVersion || echo "Git delete local releaseVersion branch failed!"
+
+    exit 1
+}
+
+function usage() {
+    echo "Process a release for a git repo"
+    echo
+    echo "Syntax: $0 [options]"
+    echo
+    echo "options:"
+    echo "  -a    Sets the gitlab username(s) to assign to the merge requests"
+    echo "  -c    Sets the current development version number"
+    echo "  -h    Print this Help."
+    echo "  -n    Sets the next development version number"
+    echo "  -r    Sets the release version number"
+    echo
+}
+
+################################################################################
+# Process the input options. Add options as needed.                            #
+################################################################################
+while getopts "a:c:hin:r:" opt
+do # parse and handle option flags
+    case $opt in
+        a)
+            ASSIGNEES="${OPTARG}"
+            ;;
+        c)
+            CURRENT_VERSION="${OPTARG}"
+            ;;
+        h) 
+            usage
+            exit 
+            ;;
+        i)
+            IGNORE_UNTRACKED=true
+            ;;
+        n)
+            NEXT_VERSION="${OPTARG}"
+            ;;
+        r)
+            RELEASE_VERSION="${OPTARG}"
+            ;;
+        \?) echo "Invalid option"; exit 1 ;;
+        :) echo "Invalid Option: -$OPTARG requires an argument"; exit 1 ;;
+    esac
+done
+shift $((OPTIND -1))
+
+################################################################################
+# Check dependencies                                                           #
+################################################################################
+require_command awk cut git mvn sed
+require_xmllint_has_xpath
+has_command glab || die_with "Missing required: glab (https://glab.readthedocs.io/en/latest/)"
+
+echo ""
+echo "Checking out development branch"
+echo "################################################################################"
+git checkout development
+
+echo ""
+echo "Checking git status"
+echo "################################################################################"
+if [ "$IGNORE_UNTRACKED" = true ] ; then
+	if [ $(git status -suno | wc -l) != "0" ] ; then
+		git status -suno
+		die_with "There are uncommitted changes, please commit or stash them to continue with the release:"
+	else
+		echo "Good, no uncommitted changes found"
+	fi
+else
+	if [ $(git status -s | wc -l) != "0" ] ; then
+		git status -s
+		die_with "There are uncommitted changes, please commit or stash them to continue with the release:"
+	else
+		echo "Good, no uncommitted changes found"
+	fi
+fi
+
+################################################################################
+# main logic                                                                   #
+################################################################################
+echo ""
+echo "Prepare Release"
+echo "################################################################################"
+
+# 1. Extract the current version (requires xmlllint with xpath suport)
+# - read pom.xml for project.version i.e. `<version>1.0.2-SNAPSHOT</version>`
+if [ -z "$CURRENT_VERSION" ] 
+then
+	CURRENT_VERSION=$(xmllint --xpath "/*[local-name() = 'project']/*[local-name() = 'version']/text()" pom.xml)
+fi
+echo "Current pom.xml version: $CURRENT_VERSION"
+
+# 1. if not provided - determine RELEASE_VERSION 
+if [ -z $RELEASE_VERSION ]
+then 
+    # query mvn for release version
+    # RELEASE_VERSION=$(mvn -q -Dexec.executable=echo \
+    #     -Dexec.args='${project.version}' --non-recursive exec:exec | cut -f1 -d"-")
+
+    # remove suffix `-SNAPSHOT` from CURRENT_VERSION?
+    RELEASE_VERSION=$(echo $CURRENT_VERSION | cut -f1 -d"-")
+fi
+echo "Using $RELEASE_VERSION for release"
+
+# if a release tag of this version already exists then abort immediately
+if [ $(git tag -l "${RELEASE_VERSION}" | wc -l) != "0" ] ; then
+	die_with "A tag already exists for the release version ${RELEASE_VERSION}"
+fi
+
+# 1. if not provided deterine NEXT_VERSION - auto increment release version
+if [ -z $NEXT_VERSION ]
+then
+    # increment the third digit of the version and overwrite the variable
+    NEXT_VERSION="$(echo ${RELEASE_VERSION} |  awk -F'.' '{print $1"."$2"."$3+1}' |  sed s/[.]$//)-SNAPSHOT"
+fi
+echo "Using $NEXT_VERSION for next development version"
+
+
+echo ""
+echo "Create release branch for merge to main"
+echo "################################################################################"
+git checkout -b release
+
+echo ""
+echo "Performing maven release"
+echo "################################################################################"
+mvn -B release:clean \
+    release:prepare \
+    -Dtag=${RELEASE_VERSION} \
+    release:perform \
+    -DreleaseVersion=${RELEASE_VERSION} \
+    -DdevelopmentVersion=${NEXT_VERSION} \
+    deploy || rollback_and_die_with "Build/Deploy failure. Release failed."
+
+echo ""
+echo "Create releaseVersion branch for merge into develoment"
+echo "################################################################################"
+git branch releaseVersion ${RELEASE_VERSION}
+git push -u origin releaseVersion
+
+echo ""
+echo "Create merge request from releaseVersion branch to default branch"
+echo "################################################################################"
+TARGET_BRANCH="$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')"
+glab mr create \
+    --assignee "$ASSIGNEES" \
+    --description "merge releaseVersion ${RELEASE_VERSION}" \
+    --remove-source-branch \
+    --source-branch "releaseVersion" \
+    --target-branch "$TARGET_BRANCH" \
+    --title "merge releaseVersion ${RELEASE_VERSION} to $TARGET_BRANCH branch"
+
+echo ""
+echo "Create merge request from release branch to development branch"
+echo "################################################################################"
+TARGET_BRANCH="development"
+glab mr create \
+    --assignee "$ASSIGNEES" \
+    --description "merge releaseVersion ${RELEASE_VERSION}" \
+    --remove-source-branch \
+    --source-branch "release" \
+    --target-branch "$TARGET_BRANCH" \
+    --title "merge releaseVersion ${RELEASE_VERSION} to $TARGET_BRANCH branch"
