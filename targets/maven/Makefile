@@ -10,12 +10,13 @@ mvn/verify:
 		--workdir /src/ \
 		maven:3.6.3-jdk-11 mvn verify --log-file ./mvn.log
 
+## execute maven clean and install
 mvn/build/jar:
 	@mvn clean install
 
+## execute maven compile jib build
 mvn/build/image:
 	@mvn compile jib:build
 
-mvn/build/all: 
-	mvn/build/jar \
-	mvn/build/image
+## execute maven build jar followed by maven build image
+mvn/build/all: mvn/build/jar mvn/build/image
