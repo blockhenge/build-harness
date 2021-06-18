@@ -24,3 +24,9 @@ cat << EOF > .envrc
 export PATH=./build-harness/bin:./build-harness/vendor:\$PATH
 EOF
 fi
+
+echo "Add dir to direnv allow list"
+if command -v direnv &> /dev/null
+then
+  direnv allow
+fi
