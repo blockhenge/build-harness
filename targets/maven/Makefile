@@ -1,6 +1,7 @@
 
 
-## run maven verify
+## run maven verify using docker
+# - this approach needs work 
 mvn/verify:
 	docker run -it --rm \
 		--volume $(shell pwd):/src/ \
@@ -8,3 +9,13 @@ mvn/verify:
 		--volume $(HOME)/.m2/repository:/repository \
 		--workdir /src/ \
 		maven:3.6.3-jdk-11 mvn verify --log-file ./mvn.log
+
+mvn/build/jar:
+	@mvn clean install
+
+mvn/build/image:
+	@mvn compile jib:build
+
+mvn/build/all: 
+	mvn/build/jar \
+	mvn/build/image
