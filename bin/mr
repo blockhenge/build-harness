@@ -95,4 +95,5 @@ glab mr create \
     --remove-source-branch \
     --source-branch "${SOURCE_BRANCH}" \
     --target-branch "${TARGET_BRANCH}" \
-    --title "${DESCRIPTION}"
+    --title "${DESCRIPTION}" \
+    --web
