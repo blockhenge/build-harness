@@ -31,7 +31,7 @@ function usage() {
 ################################################################################
 # Process the input options. Add options as needed.                            #
 ################################################################################
-while getopts "a:d:hi" opt
+while getopts "a:d:his:t:" opt
 do # parse and handle option flags
     case $opt in
         a)
@@ -64,15 +64,14 @@ shift $((OPTIND -1))
 ################################################################################
 has_command glab || die "Missing required: glab (https://glab.readthedocs.io/en/latest/)"
 
-################################################################################
-# main logic                                                                   #
-################################################################################
-
 if [ -z "$SOURCE_BRANCH" ]
 then
     # if source branch is not specified assume current branch
     SOURCE_BRANCH="$(git branch --show-current)"
 fi
+
+git_origin_has_branch $SOURCE_BRANCE || die "$SOURCE_BRANCE not found at origin"
+
 
 if [ -z "$TARGET_BRANCH" ]
 then
@@ -80,12 +79,17 @@ then
     TARGET_BRANCH="development"
 fi
 
+git_origin_has_branch $TARGET_BRANCH || die "$TARGET_BRANCH not found at origin"
+
 if [ -z "$DESCRIPTION" ]
 then
     # if description is empty use latest commit message
     DESCRIPTION="$(git log -1)"
 fi
 
+################################################################################
+# main logic                                                                   #
+################################################################################
 echo ""
 echo "Create merge request from ${SOURCE_BRANCH} branch to ${TARGET_BRANCH} branch"
 echo "################################################################################"
