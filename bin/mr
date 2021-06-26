@@ -68,19 +68,19 @@ has_command glab || die "Missing required: glab (https://glab.readthedocs.io/en/
 # main logic                                                                   #
 ################################################################################
 
-if [ -z $SOURCE_BRANCH ]
+if [ -z "$SOURCE_BRANCH" ]
 then
     # if source branch is not specified assume current branch
     SOURCE_BRANCH="$(git branch --show-current)"
 fi
 
-if [ -z $TARGET_BRANCH ]
+if [ -z "$TARGET_BRANCH" ]
 then
     # if target branch is not specified assume development branch
     TARGET_BRANCH="development"
 fi
 
-if [ -z $DESCRIPTION ]
+if [ -z "$DESCRIPTION" ]
 then
     # if description is empty use latest commit message
     DESCRIPTION="$(git log -1)"
@@ -89,11 +89,17 @@ fi
 echo ""
 echo "Create merge request from ${SOURCE_BRANCH} branch to ${TARGET_BRANCH} branch"
 echo "################################################################################"
-glab mr create \
+result=$(glab mr create \
     --assignee "${ASSIGNEES}" \
     --description "${DESCRIPTION}" \
     --remove-source-branch \
     --source-branch "${SOURCE_BRANCH}" \
     --target-branch "${TARGET_BRANCH}" \
-    --title "${DESCRIPTION}" \
-    --web
+    --title "${DESCRIPTION}")
+
+mr="$(echo $result | cut -d ' ' -f 1 | cut -d '!' -f 2)"
+repo=$(git config --get remote.origin.url | cut -d ':' -f 2 | cut -d '.' -f 1)
+url="https://gitlab.com/$repo/-/merge_requests/$mr"
+
+# TODO - make this work cross platform
+xdg-open $url

@@ -194,23 +194,32 @@ git push -u origin releaseVersion
 echo ""
 echo "Create merge request from releaseVersion branch to default branch"
 echo "################################################################################"
-TARGET_BRANCH="$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')"
-glab mr create \
-    --assignee "$ASSIGNEES" \
-    --description "merge releaseVersion ${RELEASE_VERSION}" \
-    --remove-source-branch \
-    --source-branch "releaseVersion" \
-    --target-branch "$TARGET_BRANCH" \
-    --title "merge releaseVersion ${RELEASE_VERSION} to $TARGET_BRANCH branch"
+# TARGET_BRANCH="$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')"
+# glab mr create \
+#     --assignee "$ASSIGNEES" \
+#     --description "merge releaseVersion ${RELEASE_VERSION}" \
+#     --remove-source-branch \
+#     --source-branch "releaseVersion" \
+#     --target-branch "$TARGET_BRANCH" \
+#     --title 
+mr -a "$ASSIGNEES" \
+    -d "merge releaseVersion ${RELEASE_VERSION} to $TARGET_BRANCH branch" \
+    -s "releaseVersion" \
+    -t "$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')"
+
 
 echo ""
 echo "Create merge request from release branch to development branch"
 echo "################################################################################"
-TARGET_BRANCH="development"
-glab mr create \
-    --assignee "$ASSIGNEES" \
-    --description "merge releaseVersion ${RELEASE_VERSION}" \
-    --remove-source-branch \
-    --source-branch "release" \
-    --target-branch "$TARGET_BRANCH" \
-    --title "merge releaseVersion ${RELEASE_VERSION} to $TARGET_BRANCH branch"
+# TARGET_BRANCH="development"
+# glab mr create \
+#     --assignee "$ASSIGNEES" \
+#     --description "merge releaseVersion ${RELEASE_VERSION}" \
+#     --remove-source-branch \
+#     --source-branch "release" \
+#     --target-branch "$TARGET_BRANCH" \
+#     --title "merge releaseVersion ${RELEASE_VERSION} to $TARGET_BRANCH branch"
+mr -a "$ASSIGNEES" \
+    -d "merge releaseVersion ${RELEASE_VERSION} to $TARGET_BRANCH branch" \
+    -s "release" \
+    -t "development"
