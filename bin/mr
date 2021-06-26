@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+
+set -e
+
+################################################################################
+# find script location
+################################################################################
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# [ -f "$DIR/../lib/bash.sh" ] !! make -c $DIR/.. init
+[ -f "$DIR/../lib/bash.sh" ] && source "$DIR/../lib/bash.sh"
+
+################################################################################
+# script functions
+################################################################################
+function usage() {
+    echo "Process create merge request"
+    echo
+    echo "Syntax: $0 [options]"
+    echo
+    echo "options:"
+    echo "  -a    Sets the gitlab username(s) to assign to the merge requests."
+    echo "  -d    Sets the description for the merge request."
+    echo "  -h    Print this Help."
+    echo "  -i    Ignores untracked files."
+    echo "  -s    Sets the source branch for the merge request."
+    echo "  -t    Sets the target branch for the merge request."
+    echo
+}
+
+################################################################################
+# Process the input options. Add options as needed.                            #
+################################################################################
+while getopts "a:d:hi" opt
+do # parse and handle option flags
+    case $opt in
+        a)
+            ASSIGNEES="${OPTARG}"
+            ;;
+        d) 
+            DESCRIPTION="${OPTARG}"
+            ;;
+        h) 
+            usage
+            exit 
+            ;;
+        i)
+            IGNORE_UNTRACKED=true
+            ;;
+        s)
+            SOURCE_BRANCH="${OPTARG}"
+            ;;
+        t)
+            TARGET_BRANCH="${OPTARG}"
+            ;;
+        \?) echo "Invalid option"; exit 1 ;;
+        :) echo "Invalid Option: -$OPTARG requires an argument"; exit 1 ;;
+    esac
+done
+shift $((OPTIND -1))
+
+################################################################################
+# Check dependencies                                                           #
+################################################################################
+has_command glab || die "Missing required: glab (https://glab.readthedocs.io/en/latest/)"
+
+################################################################################
+# main logic                                                                   #
+################################################################################
+
+if [ -z $SOURCE_BRANCH ]
+then
+    # if source branch is not specified assume current branch
+    SOURCE_BRANCH="$(git branch --show-current)"
+fi
+
+if [ -z $TARGET_BRANCH ]
+then
+    # if target branch is not specified assume development branch
+    TARGET_BRANCH="development"
+fi
+
+
+echo ""
+echo "Create merge request from ${SOURCE_BRANCH} branch to ${TARGET_BRANCH} branch"
+echo "################################################################################"
+glab mr create \
+    --assignee "${ASSIGNEES}" \
+    --description "${DESCRIPTION}" \
+    --remove-source-branch \
+    --source-branch "${SOURCE_BRANCH}" \
+    --target-branch "${TARGET_BRANCH}" \
+    --title "${DESCRIPTION}"

@@ -7,8 +7,8 @@ set -e
 ################################################################################
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# [ -f "$DIR/../build-harness/lib/bash.sh" ] !! make -c $DIR/.. init
-[ -f "$DIR/../build-harness/lib/bash.sh" ] && source "$DIR/../build-harness/lib/bash.sh"
+# [ -f "$DIR/../lib/bash.sh" ] !! make -c $DIR/.. init
+[ -f "$DIR/../lib/bash.sh" ] && source "$DIR/../lib/bash.sh"
 
 ################################################################################
 # script functions
