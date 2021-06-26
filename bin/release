@@ -14,11 +14,6 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # script functions
 ################################################################################
 
-function die_with() {
-	echo "$*" >&2
-	exit 1
-}
-
 function has_command() {
 	which "$1" >/dev/null 2>/dev/null || return 1
 	return 0
@@ -36,17 +31,17 @@ function has_xmllint_with_xpath() {
 function require_command() {
 	while [ -n "$1" ]
 	do
-		has_command "$1" || die_with "Missing required command: $1"
+		has_command "$1" || die "Missing required command: $1"
 		shift
 	done
 }
 
 function require_xmllint_has_xpath() {
-	has_command xmllint || die_with "Missing xmllint command, please install it (from libxml2)"
-	has_xmllint_with_xpath || die_with "xmllint command is missing the --xpath option, please install the libxml2 version"
+	has_command xmllint || die "Missing xmllint command, please install it (from libxml2)"
+	has_xmllint_with_xpath || die "xmllint command is missing the --xpath option, please install the libxml2 version"
 }
 
-function rollback_and_die_with() {
+function rollback_and_die() {
     echo "$*" >&2
 
     echo ""
@@ -119,7 +114,7 @@ shift $((OPTIND -1))
 ################################################################################
 require_command awk cut git mvn sed
 require_xmllint_has_xpath
-has_command glab || die_with "Missing required: glab (https://glab.readthedocs.io/en/latest/)"
+has_command glab || die "Missing required: glab (https://glab.readthedocs.io/en/latest/)"
 
 echo ""
 echo "Checking out development branch"
@@ -132,14 +127,14 @@ echo "##########################################################################
 if [ "$IGNORE_UNTRACKED" = true ] ; then
 	if [ $(git status -suno | wc -l) != "0" ] ; then
 		git status -suno
-		die_with "There are uncommitted changes, please commit or stash them to continue with the release:"
+		die "There are uncommitted changes, please commit or stash them to continue with the release:"
 	else
 		echo "Good, no uncommitted changes found"
 	fi
 else
 	if [ $(git status -s | wc -l) != "0" ] ; then
 		git status -s
-		die_with "There are uncommitted changes, please commit or stash them to continue with the release:"
+		die "There are uncommitted changes, please commit or stash them to continue with the release:"
 	else
 		echo "Good, no uncommitted changes found"
 	fi
@@ -174,7 +169,7 @@ echo "Using $RELEASE_VERSION for release"
 
 # if a release tag of this version already exists then abort immediately
 if [ $(git tag -l "${RELEASE_VERSION}" | wc -l) != "0" ] ; then
-	die_with "A tag already exists for the release version ${RELEASE_VERSION}"
+	die "A tag already exists for the release version ${RELEASE_VERSION}"
 fi
 
 # 1. if not provided deterine NEXT_VERSION - auto increment release version
@@ -200,7 +195,7 @@ mvn -B release:clean \
     release:perform \
     -DreleaseVersion=${RELEASE_VERSION} \
     -DdevelopmentVersion=${NEXT_VERSION} \
-    deploy || rollback_and_die_with "Build/Deploy failure. Release failed."
+    deploy || rollback_and_die "Build/Deploy failure. Release failed."
 
 echo ""
 echo "Create releaseVersion branch for merge into develoment"
