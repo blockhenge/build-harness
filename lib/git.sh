@@ -1,21 +1,8 @@
 #!/usr/bin/env bash
 
-git_update_branch() {
-  local branch="$1"
-  set +e
-  if git branch -a | egrep "remotes/origin/$branch"
-  then
-    action "update $branch branch"
-    git checkout "$branch" && \
-    git pull origin "$branch" && \
-    git submodule update --recursive #> /dev/null 2>&1
-  fi
-  set -e
-}
-
 git_clone_or_update() {
-  local url="$1"
-  local directory="$2"
+  local url="${1}"
+  local directory="${2}"
 
   if [ -d "$directory/.git" ]
   then
@@ -35,6 +22,29 @@ git_clone_or_update() {
       cd "$directory" && git checkout "$ref" || exit
     )
   fi
+}
+
+git_origin_has_branch() {
+  local branch="${1}"
+  if git ls-remote | grep refs/heads/$branch > /dev/null 2>&1
+  then
+    return 0
+  else
+    return 1
+  fi
+}
+
+git_update_branch() {
+  local branch="${1}"
+  set +e
+  if git_origin_has_branch $branch
+  then
+    action "update $branch branch"
+    git checkout "$branch" && \
+    git pull origin "$branch" && \
+    git submodule update --recursive #> /dev/null 2>&1
+  fi
+  set -e
 }
 
 # regex that covers most valid git repo formats
