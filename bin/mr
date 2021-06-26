@@ -80,6 +80,11 @@ then
     TARGET_BRANCH="development"
 fi
 
+if [ -z $DESCRIPTION ]
+then
+    # if description is empty use latest commit message
+    DESCRIPTION="$(git log -1)"
+fi
 
 echo ""
 echo "Create merge request from ${SOURCE_BRANCH} branch to ${TARGET_BRANCH} branch"
