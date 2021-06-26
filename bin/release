@@ -14,11 +14,6 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # script functions
 ################################################################################
 
-function has_command() {
-	which "$1" >/dev/null 2>/dev/null || return 1
-	return 0
-}
-
 function has_xmllint_with_xpath() {
 	if [ "$(xmllint 2>&1 | grep xpath | wc -l)" = "0" ] 
     then
@@ -26,14 +21,6 @@ function has_xmllint_with_xpath() {
 	else
 		return 0
 	fi
-}
-
-function require_command() {
-	while [ -n "$1" ]
-	do
-		has_command "$1" || die "Missing required command: $1"
-		shift
-	done
 }
 
 function require_xmllint_has_xpath() {
@@ -73,6 +60,7 @@ function usage() {
     echo "  -a    Sets the gitlab username(s) to assign to the merge requests"
     echo "  -c    Sets the current development version number"
     echo "  -h    Print this Help."
+    echo "  -i    Ignore untracked files."
     echo "  -n    Sets the next development version number"
     echo "  -r    Sets the release version number"
     echo
