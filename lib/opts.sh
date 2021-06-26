@@ -20,7 +20,7 @@ set -o functrace
 set -o errexit
 
 # Exit if script uses undefined variables.
-set -o nounset
+# set -o nounset
 
 # Prevent masking an error in a pipeline.
 # Look at the end of the 'Use set -e' section for an excellent explanation.
