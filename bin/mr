@@ -72,7 +72,6 @@ fi
 
 git_origin_has_branch $SOURCE_BRANCH || die "branch $SOURCE_BRANCH not found at origin"
 
-
 if [ -z "$TARGET_BRANCH" ]
 then
     # if target branch is not specified assume development branch
