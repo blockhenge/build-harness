@@ -66,8 +66,7 @@ fi
 # main logic                                                                   #
 ################################################################################
 
-cmd="glab mr list --assignee=@me --per-page 1 --source-branch $SOURCE_BRANCH"
-result=$($cmd)
+result=$(glab mr list --assignee=@me --per-page 1 --source-branch $SOURCE_BRANCH)
 mr="$(echo $result | cut -d ' ' -f 1 | cut -d '!' -f 2)"
 repo=$(git config --get remote.origin.url | cut -d ':' -f 2 | cut -d '.' -f 1)
 url="https://gitlab.com/$repo/-/merge_requests/$mr"
