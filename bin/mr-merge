@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+
+set -e
+
+################################################################################
+# find script location
+################################################################################
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# [ -f "$DIR/../lib/bash.sh" ] !! make -c $DIR/.. init
+[ -f "$DIR/../lib/bash.sh" ] && source "$DIR/../lib/bash.sh"
+
+################################################################################
+# script functions
+################################################################################
+function usage() {
+    echo "Process merge and close merge request"
+    echo
+    echo "Syntax: $0 [options]"
+    echo
+    echo "options:"
+    echo "  -h    Print this Help."
+    echo "  -r    filter by reviewer for the merge request."
+    echo "  -s    filter by source branch for the merge request."
+    echo "  -t    filter by target branch for the merge request."
+    echo
+}
+
+################################################################################
+# Process the input options. Add options as needed.                            #
+################################################################################
+while getopts "hr:s:t:" opt
+do # parse and handle option flags
+    case $opt in
+        h) 
+            usage
+            exit 
+            ;;
+        r)
+            REVIEWER="${OPTARG}"
+            ;;
+        s)
+            SOURCE_BRANCH="${OPTARG}"
+            ;;
+        t)
+            TARGET_BRANCH="${OPTARG}"
+            ;;
+        \?) echo "Invalid option"; exit 1 ;;
+        :) echo "Invalid Option: -$OPTARG requires an argument"; exit 1 ;;
+    esac
+done
+shift $((OPTIND -1))
+
+################################################################################
+# Check dependencies                                                           #
+################################################################################
+has_command glab || die "Missing required: glab (https://glab.readthedocs.io/en/latest/)"
+
+if [ -z "$SOURCE_BRANCH" ]
+then
+    # if source branch is not specified assume current branch
+    SOURCE_BRANCH="$(git branch --show-current)"
+fi
+
+################################################################################
+# main logic                                                                   #
+################################################################################
+
+cmd="glab mr list --assignee=@me --per-page 1 --source-branch $SOURCE_BRANCH"
+result=$($cmd)
+mr="$(echo $result | cut -d ' ' -f 1 | cut -d '!' -f 2)"
+repo=$(git config --get remote.origin.url | cut -d ':' -f 2 | cut -d '.' -f 1)
+url="https://gitlab.com/$repo/-/merge_requests/$mr"
+
+# TODO - make this work cross platform
+xdg-open $url
