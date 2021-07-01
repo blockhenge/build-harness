@@ -14,7 +14,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # script functions
 ################################################################################
 function usage() {
-    echo "Process find first merge request for source branch and open it in web browser"
+    echo "Process find first merge request for source branch and merge it"
     echo
     echo "Syntax: $0 [options]"
     echo
@@ -70,8 +70,5 @@ result=$(glab mr list --assignee=@me --per-page 1 --source-branch $SOURCE_BRANCH
 result="${result##*$'\n'}"
 
 mr="$(echo $result | cut -d ' ' -f 1 | cut -d '!' -f 2)"
-repo=$(git config --get remote.origin.url | cut -d ':' -f 2 | cut -d '.' -f 1)
-url="https://gitlab.com/$repo/-/merge_requests/$mr"
 
-# TODO - make this work cross platform
-xdg-open $url
+glab mr merge $mr --yes
