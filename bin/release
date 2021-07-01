@@ -202,7 +202,7 @@ echo "##########################################################################
 #     --source-branch "releaseVersion" \
 #     --target-branch "$TARGET_BRANCH" \
 #     --title 
-mr -a "$ASSIGNEES" \
+mr-create -a "$ASSIGNEES" \
     -d "merge releaseVersion ${RELEASE_VERSION} to $TARGET_BRANCH branch" \
     -s "releaseVersion" \
     -t "$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')"
@@ -219,7 +219,7 @@ echo "##########################################################################
 #     --source-branch "release" \
 #     --target-branch "$TARGET_BRANCH" \
 #     --title "merge releaseVersion ${RELEASE_VERSION} to $TARGET_BRANCH branch"
-mr -a "$ASSIGNEES" \
+mr-create -a "$ASSIGNEES" \
     -d "merge releaseVersion ${RELEASE_VERSION} to $TARGET_BRANCH branch" \
     -s "release" \
     -t "development"
