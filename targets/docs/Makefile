@@ -1,8 +1,7 @@
-.PHONY : docs
-docs/deps::
+docs/deps:
 	@mkdir -p docs
+.PHONY : docs/deps
 
-.PHONY : docs/targets.md
 ## Update `docs/targets.md` from `make help`
 docs/targets.md: docs/deps
 	@( \
@@ -13,10 +12,11 @@ docs/targets.md: docs/deps
 		echo '```'; \
 		echo "<!-- markdownlint-restore -->"; \
 	) > $@
+.PHONY : docs/targets.md
 
-.PHONY : docs/terraform.md
 ## Update `docs/terraform.md` from `terraform-docs`
 docs/terraform.md: docs/deps packages/install/terraform-docs
 	@echo "<!-- markdownlint-disable -->" > $@
 	@terraform-docs md . >> $@
 	@echo "<!-- markdownlint-restore -->" >> $@
+.PHONY : docs/terraform.md
