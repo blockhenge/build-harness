@@ -12,11 +12,11 @@ mvn/verify:
 
 ## execute maven clean and install
 mvn/build/jar:
-	@mvn clean install
+	@mvn clean install --log-file ./mvn.log
 
 ## execute maven compile jib build
-mvn/build/image:
-	@mvn compile jib:build
+mvn/build/jib:
+	@mvn compile jib:build --log-file jib.log
 
 ## execute maven build jar followed by maven build image
-mvn/build/all: mvn/build/jar mvn/build/image
+mvn/build/all: mvn/build/jar mvn/build/jib
