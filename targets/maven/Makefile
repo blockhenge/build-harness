@@ -22,7 +22,7 @@ mvn/verify:
 ## execute maven clean and install
 mvn/build/jar:
 	@aws sts get-caller-identity
-	@mvn clean install --log-file ./mvn.log
+	# @mvn clean install --log-file ./mvn.log
 
 ## execute maven compile jib build
 mvn/build/jib:
