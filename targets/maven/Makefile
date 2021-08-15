@@ -3,7 +3,7 @@
 ## run maven verify using docker
 # - this approach needs work 
 mvn/verify:
-	docker run -it --rm \
+	@docker run -it --rm \
 		--env AWS_EB_PROFILE \
 		--env AWS_ACCESS_KEY_ID \
 		--env AWS_SECRET_ACCESS_KEY \
@@ -21,9 +21,7 @@ mvn/verify:
 
 ## execute maven clean and install
 mvn/build/jar:
-	@aws sts get-caller-identity
-
-# @mvn clean install --log-file ./mvn.log
+	@mvn clean install --log-file ./mvn.log
 
 ## execute maven compile jib build
 mvn/build/jib:
