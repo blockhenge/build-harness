@@ -21,12 +21,12 @@ function usage() {
     echo "Syntax: $0 [options]"
     echo
     echo "options:"
-    echo "  -a    Sets the gitlab username(s) to assign to the merge requests."
-    echo "  -d    Sets the description for the merge request."
+    echo "  -a    Sets the gitlab username(s) to assign to the merge requests. if not specified will use current user."
+    echo "  -d    Sets the description for the merge request. if not specified will use last git commit message"
     echo "  -h    Print this Help."
     echo "  -i    Ignores untracked files."
-    echo "  -s    Sets the source branch for the merge request."
-    echo "  -t    Sets the target branch for the merge request."
+    echo "  -s    Sets the source branch for the merge request. if not specified will use current branch."
+    echo "  -t    Sets the target branch for the merge request. if not specified will use development"
     echo
 }
 
@@ -66,8 +66,9 @@ shift $((OPTIND -1))
 ################################################################################
 has_command glab || die "Missing required: glab (https://glab.readthedocs.io/en/latest/)"
 
-if [ -z "$ASSIGNEE" }
+if [ -z "$ASSIGNEE" ]
 then
+    # if assignee is not set use gitlab magic @me
     ASSIGNEE="@me"
 fi
 
@@ -102,6 +103,7 @@ echo "##########################################################################
 result=$(glab mr create \
     --assignee "${ASSIGNEE}" \
     --description "${DESCRIPTION}" \
+    --push \
     --remove-source-branch \
     --source-branch "${SOURCE_BRANCH}" \
     --target-branch "${TARGET_BRANCH}" \
@@ -110,6 +112,9 @@ result=$(glab mr create \
 mr="$(echo $result | cut -d ' ' -f 1 | cut -d '!' -f 2)"
 repo=$(git config --get remote.origin.url | cut -d ':' -f 2 | cut -d '.' -f 1)
 url="https://gitlab.com/$repo/-/merge_requests/$mr"
+
+# list available approvers for the merge request
+glab mr approvers "$mr"
 
 # TODO - make this work cross platform
 xdg-open $url
