@@ -2,6 +2,8 @@
 
 set -e
 
+GITLAB_DEFAULT_TARGET_BRANCH=${GITLAB_DEFAULT_TARGET_BRANCH:-'development'}
+
 ################################################################################
 # find script location
 ################################################################################
@@ -14,7 +16,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # script functions
 ################################################################################
 function usage() {
-    echo "Process create merge request"
+    echo "Create gitlab merge request"
     echo
     echo "Syntax: $0 [options]"
     echo
@@ -35,7 +37,7 @@ while getopts "a:d:his:t:" opt
 do # parse and handle option flags
     case $opt in
         a)
-            ASSIGNEES="${OPTARG}"
+            ASSIGNEE="${OPTARG}"
             ;;
         d) 
             DESCRIPTION="${OPTARG}"
@@ -64,6 +66,11 @@ shift $((OPTIND -1))
 ################################################################################
 has_command glab || die "Missing required: glab (https://glab.readthedocs.io/en/latest/)"
 
+if [ -z "$ASSIGNEE" }
+then
+    ASSIGNEE="@me"
+fi
+
 if [ -z "$SOURCE_BRANCH" ]
 then
     # if source branch is not specified assume current branch
@@ -75,7 +82,7 @@ git_origin_has_branch $SOURCE_BRANCH || die "branch $SOURCE_BRANCH not found at 
 if [ -z "$TARGET_BRANCH" ]
 then
     # if target branch is not specified assume development branch
-    TARGET_BRANCH="development"
+    TARGET_BRANCH="$GITLAB_DEFAULT_TARGET_BRANCH"
 fi
 
 git_origin_has_branch $TARGET_BRANCH || die "branch $TARGET_BRANCH not found at origin"
@@ -93,7 +100,7 @@ echo ""
 echo "Create merge request from ${SOURCE_BRANCH} branch to ${TARGET_BRANCH} branch"
 echo "################################################################################"
 result=$(glab mr create \
-    --assignee "${ASSIGNEES}" \
+    --assignee "${ASSIGNEE}" \
     --description "${DESCRIPTION}" \
     --remove-source-branch \
     --source-branch "${SOURCE_BRANCH}" \
