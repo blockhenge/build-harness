@@ -29,15 +29,24 @@ function usage() {
 ################################################################################
 # Process the input options. Add options as needed.                            #
 ################################################################################
-while getopts "hr:s:t:" opt
+while getopts "ha:r:s:t:" opt
 do # parse and handle option flags
     case $opt in
+        a)
+            ASSIGNEE="${OPTARG}"
+            ;;
         h) 
             usage
             exit 
             ;;
+        r)
+            REVIEWER="${OPTARG}"
+            ;;
         s)
             SOURCE_BRANCH="${OPTARG}"
+            ;;
+        t)
+            TARGET_BRANCH="${OPTARG}"
             ;;
         \?) echo "Invalid option"; exit 1 ;;
         :) echo "Invalid Option: -$OPTARG requires an argument"; exit 1 ;;
@@ -50,17 +59,35 @@ shift $((OPTIND -1))
 ################################################################################
 has_command glab || die "Missing required: glab (https://glab.readthedocs.io/en/latest/)"
 
+if [ -z "$ASSIGNEE" ]
+then
+    # if assignee is not set use gitlab magic @me
+    ASSIGNEE="@me"
+fi
+
+if [ -z "$REVIEWER" ]
+then
+    # if assignee is not set use gitlab magic @me
+    REVIEWER="@me"
+fi
+
 if [ -z "$SOURCE_BRANCH" ]
 then
     # if source branch is not specified assume current branch
     SOURCE_BRANCH="$(git branch --show-current)"
 fi
 
+if [ -z "$TARGET_BRANCH" ]
+then
+    # if target branch is not specified assume development branch
+    TARGET_BRANCH="$GITLAB_DEFAULT_TARGET_BRANCH"
+fi
+
 ################################################################################
 # main logic                                                                   #
 ################################################################################
 
-result=$(glab mr list --assignee=@me --per-page 1 --source-branch $SOURCE_BRANCH)
+result=$(glab mr list --assignee=$ASSIGNEE --per-page 1 --reviewer=$REVIEWER --source-branch $SOURCE_BRANCH --target-branch $TARGET_BRANCH)
 result="${result##*$'\n'}"
 
 mr="$(echo $result | cut -d ' ' -f 1 | cut -d '!' -f 2)"
