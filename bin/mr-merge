@@ -29,63 +29,6 @@ function usage() {
 ################################################################################
 # Process the input options. Add options as needed.                            #
 ################################################################################
-while getopts "ha:r:s:t:" opt
-do # parse and handle option flags
-    case $opt in
-        a)
-            ASSIGNEE="${OPTARG}"
-            ;;
-        h) 
-            usage
-            exit 
-            ;;
-        r)
-            REVIEWER="${OPTARG}"
-            ;;
-        s)
-            SOURCE_BRANCH="${OPTARG}"
-            ;;
-        t)
-            TARGET_BRANCH="${OPTARG}"
-            ;;
-        \?) echo "Invalid option"; exit 1 ;;
-        :) echo "Invalid Option: -$OPTARG requires an argument"; exit 1 ;;
-    esac
-done
-shift $((OPTIND -1))
-
-################################################################################
-# Chec#!/usr/bin/env bash
-
-set -e
-
-################################################################################
-# find script location
-################################################################################
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-# [ -f "$DIR/../lib/bash.sh" ] !! make -c $DIR/.. init
-[ -f "$DIR/../lib/bash.sh" ] && source "$DIR/../lib/bash.sh"
-
-################################################################################
-# script functions
-################################################################################
-function usage() {
-    echo "Find first gitlab merge request for source branch and merge it"
-    echo
-    echo "Syntax: $0 [options]"
-    echo
-    echo "options:"
-    echo "  -h    Print this Help."
-    # echo "  -r    filter by reviewer for the merge request."
-    echo "  -s    filter by source branch for the merge request."
-    # echo "  -t    filter by target branch for the merge request."
-    echo
-}
-
-################################################################################
-# Process the input options. Add options as needed.                            #
-################################################################################
 while getopts "ha:s:" opt
 do # parse and handle option flags
     case $opt in
