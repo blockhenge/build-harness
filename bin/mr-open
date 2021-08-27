@@ -92,7 +92,7 @@ result="${result##*$'\n'}"
 
 mr="$(echo $result | cut -d ' ' -f 1 | cut -d '!' -f 2)"
 
-if [ "$mr" == "No" ]
+if [ "$mr" == "No" ] || [ "$mr" == "change" ]
 then
     echo "$result"
     exit 0
