@@ -66,8 +66,10 @@ fi
 ################################################################################
 # main logic                                                                   #
 ################################################################################
-
-result=$(glab mr list --assignee=$ASSIGNEE --per-page=1 --source-branch=$SOURCE_BRANCH)
+cmd="glab mr list --assignee=$ASSIGNEE --per-page=1 --source-branch=$SOURCE_BRANCH"
+echo $cmd
+result=$($cmd)
+echo $result
 result="${result##*$'\n'}"
 
 mr="$(echo $result | cut -d ' ' -f 1 | cut -d '!' -f 2)"
