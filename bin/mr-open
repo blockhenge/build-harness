@@ -91,6 +91,13 @@ result=$(glab mr list --assignee=$ASSIGNEE --per-page 1 --reviewer=$REVIEWER --s
 result="${result##*$'\n'}"
 
 mr="$(echo $result | cut -d ' ' -f 1 | cut -d '!' -f 2)"
+
+if [ "$mr" == "No" ]
+then
+    echo "$result"
+    exit 0
+fi
+
 repo=$(git config --get remote.origin.url | cut -d ':' -f 2 | cut -d '.' -f 1)
 url="https://gitlab.com/$repo/-/merge_requests/$mr"
 
