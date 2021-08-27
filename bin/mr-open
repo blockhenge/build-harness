@@ -29,7 +29,7 @@ function usage() {
 ################################################################################
 # Process the input options. Add options as needed.                            #
 ################################################################################
-while getopts "ha:r:s:t:" opt
+while getopts "ha:r:s:" opt
 do # parse and handle option flags
     case $opt in
         a)
@@ -44,9 +44,6 @@ do # parse and handle option flags
             ;;
         s)
             SOURCE_BRANCH="${OPTARG}"
-            ;;
-        t)
-            TARGET_BRANCH="${OPTARG}"
             ;;
         \?) echo "Invalid option"; exit 1 ;;
         :) echo "Invalid Option: -$OPTARG requires an argument"; exit 1 ;;
@@ -77,17 +74,11 @@ then
     SOURCE_BRANCH="$(git branch --show-current)"
 fi
 
-if [ -z "$TARGET_BRANCH" ]
-then
-    # if target branch is not specified assume development branch
-    TARGET_BRANCH="$GITLAB_DEFAULT_TARGET_BRANCH"
-fi
-
 ################################################################################
 # main logic                                                                   #
 ################################################################################
 
-result=$(glab mr list --assignee=$ASSIGNEE --per-page 1 --reviewer=$REVIEWER --source-branch $SOURCE_BRANCH --target-branch $TARGET_BRANCH)
+result=$(glab mr list --assignee $ASSIGNEE --per-page 1 --reviewer $REVIEWER --source-branch $SOURCE_BRANCH)
 result="${result##*$'\n'}"
 
 mr="$(echo $result | cut -d ' ' -f 1 | cut -d '!' -f 2)"
