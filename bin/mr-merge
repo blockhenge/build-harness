@@ -20,9 +20,7 @@ function usage() {
     echo
     echo "options:"
     echo "  -h    Print this Help."
-    # echo "  -r    filter by reviewer for the merge request."
     echo "  -s    filter by source branch for the merge request."
-    # echo "  -t    filter by target branch for the merge request."
     echo
 }
 
@@ -69,7 +67,7 @@ fi
 # main logic                                                                   #
 ################################################################################
 
-result=$(glab mr list --assignee=$ASSIGNEE --per-page 1 --reviewer=$REVIEWER --source-branch $SOURCE_BRANCH --target-branch $TARGET_BRANCH)
+result=$(glab mr list --assignee=$ASSIGNEE --per-page=1 --source-branch=$SOURCE_BRANCH)
 result="${result##*$'\n'}"
 
 mr="$(echo $result | cut -d ' ' -f 1 | cut -d '!' -f 2)"
