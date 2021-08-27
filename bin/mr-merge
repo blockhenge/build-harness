@@ -66,11 +66,9 @@ fi
 ################################################################################
 # main logic                                                                   #
 ################################################################################
-
-result=$(glab mr list --assignee=$ASSIGNEE --per-page=1 --source-branch=$SOURCE_BRANCH)
-result="${result##*$'\n'}"
-
-mr="$(echo $result | cut -d ' ' -f 1 | cut -d '!' -f 2)"
+cmd="glab mr list --assignee=$ASSIGNEE --per-page=1 --source-branch=$SOURCE_BRANCH"
+result=$($cmd)
+mr="$(echo $result | cut -d '!' -f 2 | cut -d ' ' -f 1)"
 
 if [ "$mr" == "No" ] || [ "$mr" == "change" ]
 then
