@@ -68,7 +68,7 @@ fi
 ################################################################################
 cmd="glab mr list --assignee=$ASSIGNEE --per-page=1 --source-branch=$SOURCE_BRANCH"
 result=$($cmd)
-mr="$(echo $result | cut -d '!' -f 2 | cut -d ' ' -f 1)"
+mr="$(echo "$result" | grep '!' | cut -d '!' -f 2 | cut -d ' ' -f 1 | sed 's/[^0-9]*//g'  )"
 
 if [[ "No" = "$mr" ]] || [[ "change" == "$mr" ]]
 then
@@ -79,5 +79,11 @@ fi
 repo=$(git config --get remote.origin.url | cut -d ':' -f 2 | cut -d '.' -f 1)
 url="https://gitlab.com/$repo/-/merge_requests/$mr"
 
-# TODO - make this work cross platform
-xdg-open $url
+case "$(uname -s)" in
+    Darwin )
+        open "$url" 
+        ;;
+    linux )
+        xdg-open "$url" 
+        ;;
+esac
