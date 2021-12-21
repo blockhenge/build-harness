@@ -1,31 +1,25 @@
 
+MVN_CLI_OPTS ?= -s ci_settings.xml --batch-mode --errors --fail-at-end --show-version
+MVN_OPTS ?= -Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true
+MVN_SKIP_TEST_OPTS ?= -Dmaven.test.skip=true
+MVN_LOG_OPTS ?= --log-file mvn.log & less +F mvn.log
+JIB_LOG_OPTS ?= --log-file jib.log & less +F jib.log
 
 ## run maven verify using docker
 # - this approach needs work 
 mvn/verify:
-	@docker run -it --rm \
-		--env AWS_EB_PROFILE \
-		--env AWS_ACCESS_KEY_ID \
-		--env AWS_SECRET_ACCESS_KEY \
-		--env AWS_SESSION_TOKEN \
-		--env AWS_SECURITY_TOKEN \
-		--env AWS_SESSION_EXPIRATION \
-		--env AWS_VAULT \
-		--env AWS_VAULT_BACKEND \
-		--volume $(shell pwd):/src/ \
-		--volume $(HOME)/.aws:/root/.aws \
-		--volume $(HOME)/.m2/settings.xml:/usr/share/maven/conf/settings.xml \
-		--volume $(HOME)/.m2/repository:/repository \
-		--workdir /src/ \
-		maven:3.6.3-jdk-11 mvn verify --log-file ./mvn.log
+	@mvn $(MVN_CLI_OPTS) verify
+
+mvn/version:
+	@mvn -q -Dexec.executable=echo -Dexec.args='$${project.version}' --non-recursive exec:exec
 
 ## execute maven clean and install
 mvn/build/jar:
-	@mvn clean install --update-snapshots --debug --log-file mvn.log
+	@mvn $(MVN_CLI_OPTS) clean install $(MVN_LOG_OPTS) 
 
 ## execute maven compile jib build
 mvn/build/jib:
-	@mvn compile jib:build --log-file jib.log
+	@mvn $(MVN_CLI_OPTS) $(MVN_SKIP_TEST_OPTS) compile jib:build $(JIB_LOG_OPTS)
 
 ## execute maven build jar followed by maven build image
 mvn/build/all: mvn/build/jar mvn/build/jib
