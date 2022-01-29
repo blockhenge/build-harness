@@ -78,7 +78,7 @@ then
     SOURCE_BRANCH="$(git branch --show-current)"
 fi
 
-git_origin_has_branch $SOURCE_BRANCH || die "branch $SOURCE_BRANCH not found at origin"
+git_origin_has_branch "$SOURCE_BRANCH" || die "branch $SOURCE_BRANCH not found at origin"
 
 if [ -z "$TARGET_BRANCH" ]
 then
@@ -86,7 +86,7 @@ then
     TARGET_BRANCH="$GITLAB_DEFAULT_TARGET_BRANCH"
 fi
 
-git_origin_has_branch $TARGET_BRANCH || die "branch $TARGET_BRANCH not found at origin"
+git_origin_has_branch "$TARGET_BRANCH" || die "branch $TARGET_BRANCH not found at origin"
 
 if [ -z "$DESCRIPTION" ]
 then
@@ -100,21 +100,13 @@ fi
 echo ""
 echo "Create merge request from ${SOURCE_BRANCH} branch to ${TARGET_BRANCH} branch"
 echo "################################################################################"
-result=$(glab mr create \
+glab mr create \
     --assignee "${ASSIGNEE}" \
     --description "${DESCRIPTION}" \
     --push \
     --remove-source-branch \
     --source-branch "${SOURCE_BRANCH}" \
     --target-branch "${TARGET_BRANCH}" \
-    --title "${DESCRIPTION}")
+    --title "${DESCRIPTION}"
 
-mr="$(echo $result | cut -d ' ' -f 1 | cut -d '!' -f 2)"
-repo=$(git config --get remote.origin.url | cut -d ':' -f 2 | cut -d '.' -f 1)
-url="https://gitlab.com/$repo/-/merge_requests/$mr"
-
-# list available approvers for the merge request
-glab mr approvers "$mr"
-
-# TODO - make this work cross platform
-xdg-open $url
+"$DIR"/mr-open
