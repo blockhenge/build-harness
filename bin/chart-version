@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+MAVEN_VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
+echo "MAVEN_VERSION: $MAVEN_VERSION"
+
+CHART_VERSION=$(yq e '.version' chart/Chart.yaml)
+echo "CHART_VERSION: $CHART_VERSION"
+
+if [[ ! "$MAVEN_VERSION" == "$CHART_VERSION" ]]
+then
+    sed -i '' "s/version: $CHART_VERSION/version: $MAVEN_VERSION/" $(pwd)/chart/Chart.yaml
+    sed -i '' "s/^appVersion:.*$/appVersion: \"$MAVEN_VERSION\"/" $(pwd)/chart/Chart.yaml
+fi
