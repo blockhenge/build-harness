@@ -1,9 +1,22 @@
 #!/usr/bin/env bash
 
 MAVEN_VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
-echo "MAVEN_VERSION: $MAVEN_VERSION"
+
+if [[ ! "$?" == "0" ]]
+then
+    echo "$MAVEN_VERSION"
+    exit
+fi
 
 CHART_VERSION=$(yq e '.version' chart/Chart.yaml)
+
+if [[ ! "$?" == "0" ]]
+then
+    echo "$MAVEN_VERSION"
+    exit
+fi
+
+echo "MAVEN_VERSION: $MAVEN_VERSION"
 echo "CHART_VERSION: $CHART_VERSION"
 
 if [[ ! "$MAVEN_VERSION" == "$CHART_VERSION" ]]
